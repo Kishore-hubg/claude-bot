@@ -11,9 +11,9 @@ services:
       - key: NODE_ENV
         value: production
       - key: FRONTEND_URL
-        sync: false   # Set this in Render dashboard → your Vercel URL
+        sync: false   # Set in Render dashboard → your Vercel URL
       - key: MONGODB_URI
-        sync: false   # Set this in Render dashboard
+        sync: false
       - key: JWT_SECRET
         sync: false
       - key: JWT_EXPIRES_IN
@@ -34,3 +34,30 @@ services:
         sync: false
       - key: AZURE_CLIENT_SECRET
         sync: false
+      # Agentic sidecar integration
+      - key: AGENTIC_MODE
+        value: on
+      - key: AGENTIC_API_URL
+        value: https://claude-bot-agentic.onrender.com
+      - key: AGENTIC_API_KEY
+        sync: false   # Must match AGENTIC_API_KEY on claude-bot-agentic service
+      - key: AGENTIC_TIMEOUT_MS
+        value: "6000"
+      - key: AGENTIC_ORCHESTRATION
+        value: multi
+
+  - type: web
+    name: claude-bot-agentic
+    env: python
+    rootDir: agentic-sidecar
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT --workers 2
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false
+      - key: AGENTIC_API_KEY
+        sync: false
+      - key: AGENTIC_MULTI_SPECIALISTS
+        value: intent,extract,policy
