@@ -157,15 +157,21 @@ def test_auth_and_chat():
     mode = orchestration.get("mode")
     primary = orchestration.get("primarySource")
     # If mode is not 'on', print warning but don't fail — backend env var may need manual update
+    fallback_reason = orchestration.get("fallbackReason", "")
     if mode != "on":
         import warnings
         warnings.warn(
             f"AGENTIC_MODE={mode!r} on backend — set AGENTIC_MODE=on in Render dashboard "
-            "and redeploy backend to fully activate sidecar. primarySource={primary!r}"
+            f"and redeploy backend to fully activate sidecar. primarySource={primary!r}"
         )
     else:
-        assert primary == "agentic", \
-            f"AGENTIC_MODE=on but primarySource={primary!r} — sidecar may not be reachable from backend"
+        assert primary == "agentic", (
+            f"AGENTIC_MODE=on but primarySource={primary!r} — backend fell back to legacy_llm. "
+            f"fallbackReason={fallback_reason!r}. "
+            "Check: (1) AGENTIC_API_URL set correctly on backend Render service, "
+            "(2) AGENTIC_API_KEY matches between backend and sidecar, "
+            "(3) AGENTIC_TIMEOUT_MS=60000 set on backend Render service and redeployed."
+        )
 
 
 def test_full_workflow():
