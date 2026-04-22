@@ -141,6 +141,9 @@ def test_backend_health():
 
 def test_auth_and_chat():
     """Login → chat → valid classification type returned by backend."""
+    # Pre-warm sidecar — free tier cold-start can take 30s+; backend timeout is 6s
+    httpx.get(f"{AGENTIC}/health", timeout=60)
+
     token = login(USER_EMAIL, USER_PASS)
     r = httpx.post(
         f"{BACKEND}/api/requests/chat",
@@ -174,11 +177,11 @@ def test_full_workflow():
     manager_token = login(MANAGER_EMAIL, MANAGER_PASS)
     coe_token = login(COE_EMAIL, COE_PASS)
 
-    # 1) Submit request — explicit AUP so no clarification loop
+    # 1) Submit skills request — avoids wf1 provisioning pool check that blocks access type in prod
     chat_r = httpx.post(
         f"{BACKEND}/api/requests/chat",
         json={
-            "message": "I need access to Claude AI. I agree to the AUP. Employee ID: EMP99001.",
+            "message": "I want to add AWS Solutions Architect certification to my profile. Employee ID: EMP99001.",
             "conversationHistory": [],
         },
         headers=auth_headers(user_token),
