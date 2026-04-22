@@ -42,7 +42,7 @@ services:
       - key: AGENTIC_API_KEY
         sync: false   # Must match AGENTIC_API_KEY on claude-bot-agentic service
       - key: AGENTIC_TIMEOUT_MS
-        value: "6000"
+        value: "60000"
       - key: AGENTIC_ORCHESTRATION
         value: multi
 

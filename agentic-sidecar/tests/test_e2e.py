@@ -67,7 +67,7 @@ def auth_headers(token: str) -> dict:
 # ── Tests ─────────────────────────────────────────────────────────────────────
 def test_sidecar_health():
     """Sidecar must be live with Groq connectivity confirmed."""
-    r = httpx.get(f"{AGENTIC}/health", timeout=60)
+    r = httpx.get(f"{AGENTIC}/health", timeout=120)
     assert r.status_code == 200
     data = r.json()
     assert data["status"] == "ok"
@@ -133,7 +133,7 @@ def test_missing_fields_aup():
 
 def test_backend_health():
     """Backend must be live."""
-    r = httpx.get(f"{BACKEND}/health", timeout=60)
+    r = httpx.get(f"{BACKEND}/health", timeout=120)
     assert r.status_code == 200
     status = r.json().get("status")
     assert status in ("ok", "healthy"), f"Unexpected status: {status}"
@@ -141,9 +141,6 @@ def test_backend_health():
 
 def test_auth_and_chat():
     """Login → chat → valid classification type returned by backend."""
-    # Pre-warm sidecar — free tier cold-start can take 30s+; backend timeout is 6s
-    httpx.get(f"{AGENTIC}/health", timeout=60)
-
     token = login(USER_EMAIL, USER_PASS)
     r = httpx.post(
         f"{BACKEND}/api/requests/chat",
