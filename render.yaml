@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: claude-bot-backend
+    env: node
+    rootDir: backend
+    buildCommand: npm ci --only=production
+    startCommand: node server.js
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: FRONTEND_URL
+        sync: false   # Set this in Render dashboard → your Vercel URL
+      - key: MONGODB_URI
+        sync: false   # Set this in Render dashboard
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: MICROSOFT_APP_ID
+        sync: false
+      - key: MICROSOFT_APP_PASSWORD
+        sync: false
+      - key: AZURE_TENANT_ID
+        sync: false
+      - key: AZURE_CLIENT_ID
+        sync: false
+      - key: AZURE_CLIENT_SECRET
+        sync: false
