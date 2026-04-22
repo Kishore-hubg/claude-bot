@@ -8,7 +8,11 @@ from typing import Any, Dict, List, Literal, Optional, TypedDict
 from dotenv import load_dotenv
 from fastapi import FastAPI, Header, HTTPException
 from groq import Groq
-from langgraph.graph import END, StateGraph
+try:
+    from langgraph.graph import END, StateGraph
+except ImportError:
+    from langgraph.graph.state import StateGraph  # type: ignore[no-redef]
+    from langgraph.graph import END  # type: ignore[assignment]
 from pydantic import BaseModel, Field
 
 load_dotenv()
