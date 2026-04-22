@@ -1,0 +1,16 @@
+# deps
+node_modules/
+**/node_modules/
+
+# env/secrets
+.env
+**/.env
+backend/.env
+frontend/.env
+
+# logs/build
+*.log
+frontend/build/
+dist/
+__pycache__/
+*.pyc

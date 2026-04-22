@@ -1,0 +1,98 @@
+version: '3.8'
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Claude Assistant Bot — Docker Compose
+#
+# Spins up four services:
+#   1. mongodb  — the database
+#   2. backend  — Node.js/Express API
+#   3. agentic  — LangGraph sidecar for multi-agent routing
+#   4. frontend — React dev server (proxied to backend)
+#
+# Usage:
+#   docker compose up --build
+#   docker compose down -v   (remove volumes too)
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: claude_bot_mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: claude_assistant_bot
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: claude_bot_backend
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      agentic:
+        condition: service_started
+    environment:
+      - NODE_ENV=production
+      - PORT=5000
+      - MONGODB_URI=mongodb://mongodb:27017/claude_assistant_bot
+      - JWT_SECRET=${JWT_SECRET:-change_me_in_production}
+      - JWT_EXPIRES_IN=7d
+      - LLM_PROVIDER=${LLM_PROVIDER:-groq}
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - GROQ_MODEL=${GROQ_MODEL:-llama-3.3-70b-versatile}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-2.5-flash}
+      - FRONTEND_URL=http://localhost:3000
+      - SCHEDULER_ENABLED=${SCHEDULER_ENABLED:-true}
+      - CRON_TIMEZONE=${CRON_TIMEZONE:-Asia/Kolkata}
+      - AGENTIC_MODE=${AGENTIC_MODE:-shadow}
+      - AGENTIC_ORCHESTRATION=${AGENTIC_ORCHESTRATION:-multi}
+      - AGENTIC_API_URL=http://agentic:8001
+      - AGENTIC_API_KEY=${AGENTIC_API_KEY:-}
+      - AGENTIC_TIMEOUT_MS=${AGENTIC_TIMEOUT_MS:-6000}
+      - AGENTIC_MULTI_SPECIALISTS=${AGENTIC_MULTI_SPECIALISTS:-intent,extract,policy}
+    volumes:
+      - ./backend:/app
+      - /app/node_modules   # Anonymous volume prevents host node_modules from overwriting container's
+
+  agentic:
+    build:
+      context: ./agentic-sidecar
+      dockerfile: Dockerfile
+    container_name: claude_bot_agentic
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    environment:
+      - AGENTIC_API_KEY=${AGENTIC_API_KEY:-}
+      - AGENTIC_MULTI_SPECIALISTS=${AGENTIC_MULTI_SPECIALISTS:-intent,extract,policy}
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: claude_bot_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    environment:
+      - REACT_APP_API_URL=http://localhost:5000
+
+volumes:
+  mongo_data:
+    driver: local

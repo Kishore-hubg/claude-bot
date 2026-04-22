@@ -1,0 +1,53 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/teams/v1.17/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.17",
+  "version": "1.0.0",
+  "id": "091ee3ef-508c-40a1-a9ce-be409ba16da1",
+  "packageName": "com.infovision.claudeassistantbot",
+  "developer": {
+    "name": "InfoVision CoE AI/GenAI",
+    "websiteUrl": "https://www.infovision.com",
+    "privacyUrl": "https://www.infovision.com/privacy",
+    "termsOfUseUrl": "https://www.infovision.com/terms"
+  },
+  "name": {
+    "short": "Claude Assistant Bot",
+    "full": "InfoVision Claude Assistant Bot"
+  },
+  "description": {
+    "short": "Claude request and approval assistant",
+    "full": "Create and track Claude access, upgrade, offboarding, and support requests from Microsoft Teams."
+  },
+  "icons": {
+    "color": "color.png",
+    "outline": "outline.png"
+  },
+  "accentColor": "#1E3A5F",
+  "bots": [
+    {
+      "botId": "421af63e-13e1-4946-8bae-0da7d718b76a",
+      "scopes": ["personal"],
+      "supportsFiles": false,
+      "isNotificationOnly": false,
+      "commandLists": [
+        {
+          "scopes": ["personal"],
+          "commands": [
+            {
+              "title": "help",
+              "description": "Show bot usage tips"
+            },
+            {
+              "title": "status",
+              "description": "Check latest request status"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "permissions": ["identity", "messageTeamMembers"],
+  "validDomains": [
+    "REPLACE_WITH_BACKEND_DOMAIN"
+  ]
+}
